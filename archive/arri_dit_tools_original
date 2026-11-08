@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#15191f">
+  <title>ARRI DIT Tools</title>
+  <style>
+    :root { color-scheme: dark; --bg:#15191f; --panel:#222831; --muted:#aeb7c2; --line:#39424e; --accent:#f2c14e; }
+    * { box-sizing:border-box; }
+    html, body { margin:0; min-height:100%; background:var(--bg); color:#f5f7fa; font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    body { display:flex; flex-direction:column; min-height:100dvh; }
+    header { padding: max(16px, env(safe-area-inset-top)) 18px 14px; background:#1c222a; border-bottom:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:12px; max-width:1100px; margin:auto; }
+    .mark { width:38px; height:38px; border:2px solid var(--accent); border-radius:50%; display:grid; place-items:center; font-weight:800; letter-spacing:-2px; color:var(--accent); }
+    h1 { margin:0; font-size:1.05rem; letter-spacing:.04em; }
+    .subtitle { color:var(--muted); font-size:.78rem; margin-top:2px; }
+    nav { display:flex; gap:8px; padding:12px 14px; background:var(--bg); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:2; }
+    nav button { flex:1; min-height:48px; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:#e8edf2; padding:8px 10px; font:600 .88rem/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; cursor:pointer; }
+    nav button[aria-selected="true"] { background:var(--accent); border-color:var(--accent); color:#17191c; }
+    main { flex:1; display:flex; flex-direction:column; width:100%; max-width:1100px; margin:0 auto; padding:14px; }
+    .tool-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 10px; }
+    h2 { margin:0; font-size:1rem; }
+    .external { color:var(--accent); font-size:.82rem; text-decoration:none; white-space:nowrap; }
+    .notice { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:12px; color:var(--muted); font-size:.84rem; }
+    .frame-wrap { flex:1; min-height:65vh; background:#fff; border-radius:10px; overflow:hidden; }
+    iframe { display:block; width:100%; height:100%; min-height:65vh; border:0; background:#fff; }
+    .fallback { display:none; padding:24px; color:#1c222a; background:#f5f6f7; min-height:65vh; }
+    .fallback a { color:#0759a5; }
+    footer { color:var(--muted); text-align:center; padding:12px 16px max(14px, env(safe-area-inset-bottom)); font-size:.72rem; }
+    @media (min-width:720px) { nav { justify-content:center; } nav button { flex:0 1 280px; } main { min-height:calc(100dvh - 150px); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="mark" aria-hidden="true">A</div>
+      <div><h1>ARRI DIT TOOLS</h1><div class="subtitle">Camera prep utilities</div></div>
+    </div>
+  </header>
+
+  <nav aria-label="Select ARRI tool">
+    <button type="button" id="formatsTab" aria-controls="toolPanel" aria-selected="true">Formats &amp; Data Rate</button>
+    <button type="button" id="frameTab" aria-controls="toolPanel" aria-selected="false">Frame Line &amp; Lens</button>
+  </nav>
+
+  <main id="toolPanel">
+    <div class="tool-heading">
+      <h2 id="toolTitle">Formats &amp; Data Rate Calculator</h2>
+      <a class="external" id="openOriginal" href="https://tools.arri.com/fileadmin/adapps/afdc/index.html" target="_self">Open original ↗</a>
+    </div>
+    <div class="notice" id="statusNote" role="status">
+      If the ARRI tool does not appear below, the website may prevent embedding. Use “Open original” to access it directly.
+    </div>
+    <section class="frame-wrap" aria-label="ARRI tool">
+      <iframe id="toolFrame" title="ARRI Formats and Data Rate Calculator"
+        src="https://tools.arri.com/fileadmin/adapps/afdc/index.html"
+        loading="eager" referrerpolicy="strict-origin-when-cross-origin"
+        allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+      <div class="fallback" id="fallback">
+        <h3>Tool could not be embedded</h3>
+        <p>ARRI may restrict loading this page inside another website. Open the original tool using the link above. This app cannot override ARRI’s browser security policy.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>Independent launcher · ARRI tools remain hosted and maintained by ARRI</footer>
+
+  <script>
+    const tools = {
+      formats: {
+        title: "Formats & Data Rate Calculator",
+        url: "https://tools.arri.com/fileadmin/adapps/afdc/index.html",
+        frameTitle: "ARRI Formats and Data Rate Calculator"
+      },
+      frame: {
+        title: "Frame Line & Lens Illumination",
+        url: "https://tools.arri.com/flt/",
+        frameTitle: "ARRI Frame Line and Lens Illumination Tool"
+      }
+    };
+
+    const frame = document.getElementById("toolFrame");
+    const title = document.getElementById("toolTitle");
+    const original = document.getElementById("openOriginal");
+    const note = document.getElementById("statusNote");
+    const formatsTab = document.getElementById("formatsTab");
+    const frameTab = document.getElementById("frameTab");
+    const fallback = document.getElementById("fallback");
+    let active = "formats";
+
+    function showTool(key) {
+      const tool = tools[key];
+      if (!tool || key === active) return;
+      active = key;
+      title.textContent = tool.title;
+      original.href = tool.url;
+      frame.title = tool.frameTitle;
+      fallback.style.display = "none";
+      frame.style.display = "block";
+      note.textContent = "Loading ARRI tool. If it remains blank, use “Open original”; embedding may be restricted by ARRI.";
+      frame.src = tool.url;
+      formatsTab.setAttribute("aria-selected", String(key === "formats"));
+      frameTab.setAttribute("aria-selected", String(key === "frame"));
+    }
+
+    formatsTab.addEventListener("click", () => showTool("formats"));
+    frameTab.addEventListener("click", () => showTool("frame"));
+
+    // Cross-origin iframe restrictions prevent this page from reliably detecting
+    // whether ARRI content rendered or whether the browser blocked the embed.
+  </script>
+</body>
+</html>
